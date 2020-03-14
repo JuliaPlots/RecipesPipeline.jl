@@ -1,4 +1,10 @@
-
+## Stubs
+function _recipe_init(plt, plotattributes, args) end
+function _recipe_after_user(plt, plotattributes, args) end
+function _recipe_after_plot(plt, plotattributes, args) end
+function _recipe_after_series(plt, plotattributes, args, series_ind) end
+function _recipe_finish(plt, plotattributes, args) end
+##
 # Here comes the specification of when which recipe is processed.
 # It contains functions before and after every stage for interaction with the plotting package.
 
