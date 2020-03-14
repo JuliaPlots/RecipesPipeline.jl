@@ -3,6 +3,7 @@ _preprocess_args(p, args, s) = args #needs to modify still_to_process
 preprocessArgs!(p) = p
 is_st_supported(st) = true
 finalize_subplot!(plt, att) = nothing
+function _process_userrecipe end
 
 function _process_userrecipes(plt, plotattributes::AbstractDict{Symbol,Any}, args)
     still_to_process = RecipesBase.RecipeData[]
@@ -45,34 +46,35 @@ end
 # otherwise we just add the original KW.
 function _process_plotrecipes(
     plt,
-    kw_list;
+    kw_list,
     _typeAliases::AbstractDict{Symbol,Symbol}=Dict()
 )
     still_to_process = kw_list
-    kw_list = KW[]
+    kw_list = Dict{Symbol, Any}[]
     while !isempty(still_to_process)
-        next_kw = popfirst!(still_to_process)
+        kw = popfirst!(still_to_process)
 
         if !isa(get(kw, :seriestype, nothing), Symbol)
             # seriestype was never set, or it's not a Symbol, so it can't be a plot recipe
             push!(kw_list, kw)
-        end
-        try
-            st = kw[:seriestype]
-            st = kw[:seriestype] = get(_typeAliases, st, st)
-            datalist = RecipesBase.apply_recipe(kw, Val{st}, plt)
-            for data in datalist
-                preprocessArgs!(data.plotattributes)
-                if data.plotattributes[:seriestype] == st
-                    error("Plot recipe $st returned the same seriestype: $(data.plotattributes)")
+        else
+            try
+                st = kw[:seriestype]
+                st = kw[:seriestype] = get(_typeAliases, st, st)
+                datalist = RecipesBase.apply_recipe(kw, Val{st}, plt)
+                for data in datalist
+                    preprocessArgs!(data.plotattributes)
+                    if data.plotattributes[:seriestype] == st
+                        error("Plot recipe $st returned the same seriestype: $(data.plotattributes)")
+                    end
+                    push!(still_to_process, data.plotattributes)
                 end
-                push!(still_to_process, data.plotattributes)
-            end
-        catch err
-            if isa(err, MethodError)
-                push!(kw_list, kw)
-            else
-                rethrow()
+            catch err
+                if isa(err, MethodError)
+                    push!(kw_list, kw)
+                else
+                    rethrow()
+                end
             end
         end
     end
