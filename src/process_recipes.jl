@@ -119,6 +119,7 @@ function _process_seriesrecipe(plt, plotattributes::AbstractDict{Symbol,Any}; ty
         for data in datalist
             if isa(data, RecipesBase.RecipeData)
                 preprocessArgs!(data.plotattributes)
+                # @show data.plotattributes
                 if data.plotattributes[:seriestype] == st
                     @error("The seriestype didn't change in series recipe $st.  This will cause a StackOverflow.")
                 end

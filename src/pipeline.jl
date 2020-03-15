@@ -52,7 +52,7 @@ function recipe_pipeline!(plt,              # frontend specific representation o
     for kw in kw_list
         series_attr = _recipe_before_series!(plt, kw, kw_list)
         _process_seriesrecipe(plt, series_attr, type_aliases=type_aliases)
-        @show series_attr
+        # @show series_attr
     end
 
     _recipe_finish!(plt, plotattributes, args)
