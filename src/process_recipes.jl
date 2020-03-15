@@ -8,7 +8,7 @@
 """
     _preprocess_args(p, args, s)
 
-Take in a plot object and an  and return a set of default arguments for it.
+Take in a Vector of RecipeData (`s`) and fill in default attributes.
 """
 _preprocess_args(p, args, s) = args # needs to modify still_to_process
 
