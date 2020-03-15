@@ -36,9 +36,7 @@ function recipe_pipeline!(plt,              # frontend specific representation o
         next_kw = popfirst!(still_to_process)
         _process_plotrecipe(plt, next_kw, kw_list, still_to_process; type_aliases=type_aliases)
     end
-
-    # @show kw_list
-
+  
     _recipe_after_plot!(plt, plotattributes, kw_list)
 
     # !!! note: At this point, kw_list is fully decomposed into individual series... one KW per series.          !!!
