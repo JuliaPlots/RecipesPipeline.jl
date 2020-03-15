@@ -33,9 +33,6 @@ function _process_userrecipes(plt, plotattributes::T, args)  where T <: Abstract
     # This should modify `still_to_process`!
     _preprocess_args(plotattributes, args, still_to_process)
 
-    # @show still_to_process
-    # @show args
-
     # for plotting recipes, swap out the args and update the parameter dictionary
     # we are keeping a stack of series that still need to be processed.
     # each pass through the loop, we pop one off and apply the recipe.
@@ -103,7 +100,7 @@ end
 # this method recursively applies series recipes when the seriestype is not supported
 # natively by the backend
 function _process_seriesrecipe(plt, plotattributes::AbstractDict{Symbol,Any}; type_aliases::AbstractDict{Symbol,Symbol} = Dict{Symbol,Symbol}())
-    #println("process $(typeof(plotattributes))")
+
     # replace seriestype aliases
     st = Symbol(plotattributes[:seriestype])
     st = plotattributes[:seriestype] = get(type_aliases, st, st)
@@ -115,7 +112,6 @@ function _process_seriesrecipe(plt, plotattributes::AbstractDict{Symbol,Any}; ty
 
     # if it's natively supported, finalize processing and pass along to the backend, otherwise recurse
     if is_st_supported(plt, st)
-        # @info "st supported" st
         finalize_subplot!(plt, st, plotattributes)
 
     else
@@ -126,7 +122,6 @@ function _process_seriesrecipe(plt, plotattributes::AbstractDict{Symbol,Any}; ty
         for data in datalist
             if isa(data, RecipesBase.RecipeData)
                 preprocessArgs!(data.plotattributes)
-                # @show data.plotattributes
                 if data.plotattributes[:seriestype] == st
                     @error("The seriestype didn't change in series recipe $st.  This will cause a StackOverflow.")
                 end
