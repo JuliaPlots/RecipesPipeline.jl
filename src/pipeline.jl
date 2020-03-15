@@ -22,7 +22,7 @@ function recipe_pipeline!(plt,              # frontend specific representation o
     kw_list = _process_userrecipes(plt, plotattributes, args)
     _recipe_after_user!(plt, plotattributes, args)
 
-    @show kw_list
+    # @show kw_list
 
     # --------------------------------
     # "PLOT RECIPES"
