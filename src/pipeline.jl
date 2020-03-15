@@ -22,10 +22,6 @@ function recipe_pipeline!(plt,              # frontend specific representation o
     kw_list = _process_userrecipes(plt, plotattributes, args)
     _recipe_after_user!(plt, plotattributes, args)
 
-    # @show kw_list plotattributes
-
-    # @show kw_list
-
     # --------------------------------
     # "PLOT RECIPES"
     # --------------------------------
@@ -39,7 +35,6 @@ function recipe_pipeline!(plt,              # frontend specific representation o
     while !isempty(still_to_process)
         next_kw = popfirst!(still_to_process)
         _process_plotrecipe(plt, next_kw, kw_list, still_to_process; type_aliases=type_aliases)
-        # @show kw_list
     end
 
     # @show kw_list
@@ -52,11 +47,9 @@ function recipe_pipeline!(plt,              # frontend specific representation o
     # --------------------------------
     # "SERIES RECIPES"
     # --------------------------------
-    # @show kw_list
     for kw in kw_list
         series_attr = _recipe_before_series!(plt, kw, kw_list)
         _process_seriesrecipe(plt, series_attr, type_aliases=type_aliases)
-        # @show series_attr
     end
 
     _recipe_finish!(plt, plotattributes, args)
