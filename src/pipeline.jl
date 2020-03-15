@@ -2,7 +2,7 @@
 function _recipe_init!(plt, plotattributes, args) end
 function _recipe_after_user!(plt, plotattributes, args) end
 function _recipe_after_plot!(plt, plotattributes, kw_list) end
-function _recipe_before_series!(plt, kw, kw_list) end
+function _recipe_before_series!(plt, kw, kw_list) kw end # this must always return the kwargs
 function _recipe_finish!(plt, plotattributes, args) plt end
 
 ##
@@ -12,7 +12,7 @@ function _recipe_finish!(plt, plotattributes, args) plt end
 function recipe_pipeline!(plt,              # frontend specific representation of a plot
                          plotattributes,    # current state of recipe keywords
                          args;              # set of arguments passed by the user
-                         type_aliases)
+                         type_aliases = Dict{Symbol, Symbol}())
 
     _recipe_init!(plt, plotattributes, args)
 
@@ -21,6 +21,8 @@ function recipe_pipeline!(plt,              # frontend specific representation o
     # --------------------------------
     kw_list = _process_userrecipes(plt, plotattributes, args)
     _recipe_after_user!(plt, plotattributes, args)
+
+    # @show kw_list plotattributes
 
     # @show kw_list
 
@@ -40,6 +42,8 @@ function recipe_pipeline!(plt,              # frontend specific representation o
         # @show kw_list
     end
 
+    # @show kw_list
+
     _recipe_after_plot!(plt, plotattributes, kw_list)
 
     # !!! note: At this point, kw_list is fully decomposed into individual series... one KW per series.          !!!
@@ -48,7 +52,7 @@ function recipe_pipeline!(plt,              # frontend specific representation o
     # --------------------------------
     # "SERIES RECIPES"
     # --------------------------------
-
+    # @show kw_list
     for kw in kw_list
         series_attr = _recipe_before_series!(plt, kw, kw_list)
         _process_seriesrecipe(plt, series_attr, type_aliases=type_aliases)
