@@ -31,7 +31,10 @@ end</code></pre><p>Handle type recipes when the recipe is defined on the element
     end
     _postprocess_axis_args!(plotattributes, letter)
     return w
-end</code></pre><p>special handling for Surface... need to properly unwrap and re-wrap</p><pre><code class="language-julia">_apply_type_recipe(plotattributes, v::Surface{&lt;:AMat{&lt;:DataPoint}}) = v
+end</code></pre><p>special handling for Surface... need to properly unwrap and re-wrap</p><pre><code class="language-julia">_apply_type_recipe(
+    plotattributes,
+    v::Surface{&lt;:AMat{&lt;:Union{AbstractFloat, Integer, AbstractString, Missing}}},
+) = v
 function _apply_type_recipe(plotattributes, v::Surface)
     ret = _apply_type_recipe(plotattributes, v.surf)
     if typeof(ret) &lt;: Formatted
@@ -39,7 +42,11 @@ function _apply_type_recipe(plotattributes, v::Surface)
     else
         Surface(ret.data)
     end
-end</code></pre><p>don&#39;t do anything for datapoints or nothing</p><pre><code class="language-julia">_apply_type_recipe(plotattributes, v::AbstractArray{&lt;:DataPoint}, letter) = v
+end</code></pre><p>don&#39;t do anything for datapoints or nothing</p><pre><code class="language-julia">_apply_type_recipe(
+    plotattributes,
+    v::AbstractArray{&lt;:Union{AbstractFloat, Integer, AbstractString, Missing}},
+    letter,
+) = v
 _apply_type_recipe(plotattributes, v::Nothing, letter) = v</code></pre><p>axis args before type recipes should still be mapped to all axes</p><pre><code class="language-julia">function _preprocess_axis_args!(plotattributes)
     plt = plotattributes[:plot_object]
     for (k, v) in plotattributes
@@ -67,4 +74,4 @@ end</code></pre><p>axis args in type recipes should only be applied to the curre
             end
         end
     end
-end</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../plot_recipe/">« Plot Recipes</a><a class="docs-footer-nextpage" href="../series_recipe/">Series Recipes »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 6 April 2020 17:19">Monday 6 April 2020</span>. Using Julia version 1.4.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../plot_recipe/">« Plot Recipes</a><a class="docs-footer-nextpage" href="../series_recipe/">Series Recipes »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 6 April 2020 17:36">Monday 6 April 2020</span>. Using Julia version 1.4.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
