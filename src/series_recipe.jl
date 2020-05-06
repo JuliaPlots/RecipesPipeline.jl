@@ -11,7 +11,7 @@ function _process_seriesrecipes!(plt, kw_list)
         # select the value for current series
         slice_series_attributes!(plt, kw_list, kw)
     end
-    process_sliced_series_attributes!(plt, kw_list, kw)
+    process_sliced_series_attributes!(plt, kw_list)
     for kw in kw_list
         series_attr = DefaultsDict(kw, series_defaults(plt))
         # now we have a fully specified series, with colors chosen. we must recursively
