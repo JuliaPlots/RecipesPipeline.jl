@@ -14,7 +14,8 @@ group provided as a vector of length `len`, `false` otherwise.
 splittable_attribute(plt, key, val, len) = false
 splittable_attribute(plt, key, val::AbstractArray, len) =
     !(key in (:group, :color_palette)) &amp;&amp; length(axes(val, 1)) == len
-splittable_attribute(plt, key, val::Tuple, n) = all(splittable_attribute.(key, val, len))
+splittable_attribute(plt, key, val::Tuple, len) =
+    all(v -&gt; splittable_attribute(plt, key, v, len), val)
 
 
 &quot;&quot;&quot;
@@ -59,7 +60,7 @@ end
 Get the limits for the axis specified by `letter` (`:x`, `:y` or `:z`) in `plt`. If it
 errors, `tryrange` from PlotUtils is used.
 &quot;&quot;&quot;
-get_axis_limits(plt, letter) = ErrorException(&quot;Axis limits not defined.&quot;)</code></pre><h2 id="Plot-recipes-1"><a class="docs-heading-anchor" href="#Plot-recipes-1">Plot recipes</a><a class="docs-heading-anchor-permalink" href="#Plot-recipes-1" title="Permalink"></a></h2><pre><code class="language-julia">&quot;&quot;&quot;
+get_axis_limits(plt, letter) = throw(ErrorException(&quot;Axis limits not defined.&quot;))</code></pre><h2 id="Plot-recipes-1"><a class="docs-heading-anchor" href="#Plot-recipes-1">Plot recipes</a><a class="docs-heading-anchor-permalink" href="#Plot-recipes-1" title="Permalink"></a></h2><pre><code class="language-julia">&quot;&quot;&quot;
     type_alias(plt, st)
 
 Return the seriestype alias for `st`.
@@ -79,6 +80,12 @@ current series.
 &quot;&quot;&quot;
 function slice_series_attributes!(plt, kw_list, kw) end
 
+&quot;&quot;&quot;
+    process_sliced_series_attributes!(plt, kw_list)
+
+All series attributes are now properly resolved. Any change of the `kw_list` before the application of recipes must come here.
+&quot;&quot;&quot;
+function process_sliced_series_attributes!(plt, kw_list) end
 
 &quot;&quot;&quot;
     series_defaults(plt)
@@ -104,4 +111,4 @@ Adds the series defined by `kw` to the plot object.
 For example Plots updates the current subplot arguments, expands extrema and pushes the
 the series to the series_list of `plt`.
 &quot;&quot;&quot;
-function add_series!(plt, kw) end</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../RecipesPipeline/">« RecipesPipeline</a><a class="docs-footer-nextpage" href="../user_recipe/">User Recipes »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 7 April 2020 13:21">Tuesday 7 April 2020</span>. Using Julia version 1.4.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+function add_series!(plt, kw) end</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../RecipesPipeline/">« RecipesPipeline</a><a class="docs-footer-nextpage" href="../user_recipe/">User Recipes »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 7 May 2020 14:53">Thursday 7 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
