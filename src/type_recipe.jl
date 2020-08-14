@@ -82,9 +82,9 @@ function _preprocess_axis_args!(plt, plotattributes)
         end
     end
 end
-function _preprocess_axis_args!(plotattributes, letter)
+function _preprocess_axis_args!(plt, plotattributes, letter)
     plotattributes[:letter] = letter
-    _preprocess_axis_args!(plotattributes)
+    _preprocess_axis_args!(plt, plotattributes)
 end
 
 # axis args in type recipes should only be applied to the current axis
