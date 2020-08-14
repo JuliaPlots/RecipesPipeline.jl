@@ -25,7 +25,7 @@ end
 # and one to format tick values.
 function _apply_type_recipe(plotattributes, v::AbstractArray, letter)
     plt = plotattributes[:plot_object]
-    _preprocess_axis_args!(plotattributes, letter)
+    _preprocess_axis_args!(plt, plotattributes, letter)
     # First we try to apply an array type recipe.
     w = RecipesBase.apply_recipe(plotattributes, typeof(v), v)[1].args[1]
     warn_on_recipe_aliases!(plt, plotattributes, :type, typeof(v))
@@ -43,7 +43,7 @@ function _apply_type_recipe(plotattributes, v::AbstractArray, letter)
             return v
         end
     end
-    _postprocess_axis_args!(plotattributes, letter)
+    _postprocess_axis_args!(plt, plotattributes, letter)
     return w
 end
 
@@ -71,8 +71,7 @@ _apply_type_recipe(
 _apply_type_recipe(plotattributes, v::Nothing, letter) = v
 
 # axis args before type recipes should still be mapped to all axes
-function _preprocess_axis_args!(plotattributes)
-    plt = plotattributes[:plot_object]
+function _preprocess_axis_args!(plt, plotattributes)
     for (k, v) in plotattributes
         if is_axis_attribute(plt, k)
             pop!(plotattributes, k)
@@ -89,8 +88,7 @@ function _preprocess_axis_args!(plotattributes, letter)
 end
 
 # axis args in type recipes should only be applied to the current axis
-function _postprocess_axis_args!(plotattributes, letter)
-    plt = plotattributes[:plot_object]
+function _postprocess_axis_args!(plt, plotattributes, letter)
     pop!(plotattributes, :letter)
     if letter in (:x, :y, :z)
         for (k, v) in plotattributes
