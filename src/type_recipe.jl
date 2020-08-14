@@ -13,10 +13,11 @@
 Apply the type recipe with signature `(::Type{T}, ::T)`.
 """
 function _apply_type_recipe(plotattributes, v, letter)
-    _preprocess_axis_args!(plotattributes, letter)
+    plt = plotattributes[:plot_object]
+    _preprocess_axis_args!(plt, plotattributes, letter)
     rdvec = RecipesBase.apply_recipe(plotattributes, typeof(v), v)
     warn_on_recipe_aliases!(plotattributes[:plot_object], plotattributes, :type, typeof(v))
-    _postprocess_axis_args!(plotattributes, letter)
+    _postprocess_axis_args!(plt, plotattributes, letter)
     return rdvec[1].args[1]
 end
 
