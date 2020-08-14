@@ -8,10 +8,11 @@
 Apply the type recipe with signature `(::Type{T}, ::T)`.
 &quot;&quot;&quot;
 function _apply_type_recipe(plotattributes, v, letter)
-    _preprocess_axis_args!(plotattributes, letter)
+    plt = plotattributes[:plot_object]
+    _preprocess_axis_args!(plt, plotattributes, letter)
     rdvec = RecipesBase.apply_recipe(plotattributes, typeof(v), v)
     warn_on_recipe_aliases!(plotattributes[:plot_object], plotattributes, :type, typeof(v))
-    _postprocess_axis_args!(plotattributes, letter)
+    _postprocess_axis_args!(plt, plotattributes, letter)
     return rdvec[1].args[1]
 end</code></pre><p>Handle type recipes when the recipe is defined on the elements. This sort of recipe should return a pair of functions... one to convert to number, and one to format tick values.</p><pre><code class="language-julia">function _apply_type_recipe(plotattributes, v::AbstractArray, letter)
     plt = plotattributes[:plot_object]
@@ -73,4 +74,4 @@ end</code></pre><p>axis args in type recipes should only be applied to the curre
             end
         end
     end
-end</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../plot_recipe/">« Plot Recipes</a><a class="docs-footer-nextpage" href="../series_recipe/">Series Recipes »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 14 August 2020 07:57">Friday 14 August 2020</span>. Using Julia version 1.5.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../plot_recipe/">« Plot Recipes</a><a class="docs-footer-nextpage" href="../series_recipe/">Series Recipes »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 14 August 2020 08:25">Friday 14 August 2020</span>. Using Julia version 1.5.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
