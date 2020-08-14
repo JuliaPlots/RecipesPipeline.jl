@@ -35,7 +35,7 @@ function _apply_type_recipe(plotattributes, v::AbstractArray, letter)
         x = first(skipmissing(v))
         args = RecipesBase.apply_recipe(plotattributes, typeof(x), x)[1].args
         warn_on_recipe_aliases!(plt, plotattributes, :type, typeof(x))
-        _postprocess_axis_args!(plotattributes, letter)
+        _postprocess_axis_args!(plt, plotattributes, letter)
         if length(args) == 2 && all(arg -> arg isa Function, args)
             numfunc, formatter = args
             return Formatted(map(numfunc, v), formatter)
