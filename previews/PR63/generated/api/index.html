@@ -43,7 +43,49 @@ is_subplot_attribute(plt, attr) = false</code></pre><p>TODO: should the Plots ve
 Returns `true` if `attr` is an axis attribute, i.e. it applies to `xattr`, `yattr` and
 `zattr`, otherwise `false`.
 &quot;&quot;&quot;
-is_axis_attribute(plt, attr) = false</code></pre><h2 id="User-recipes"><a class="docs-heading-anchor" href="#User-recipes">User recipes</a><a id="User-recipes-1"></a><a class="docs-heading-anchor-permalink" href="#User-recipes" title="Permalink"></a></h2><pre><code class="language-julia">&quot;&quot;&quot;
+is_axis_attribute(plt, attr) = false</code></pre><h3 id="processing-of-axis-args"><a class="docs-heading-anchor" href="#processing-of-axis-args">processing of axis args</a><a id="processing-of-axis-args-1"></a><a class="docs-heading-anchor-permalink" href="#processing-of-axis-args" title="Permalink"></a></h3><p>axis args before type recipes should still be mapped to all axes</p><pre><code class="language-julia">&quot;&quot;&quot;
+    preprocess_axis_args!(plt, plotattributes)
+
+Preprocessing of axis attributes.
+Prepends the axis letter to axis attributes by default.
+&quot;&quot;&quot;
+function preprocess_axis_args!(plt, plotattributes)
+    for (k, v) in plotattributes
+        if is_axis_attribute(plt, k)
+            pop!(plotattributes, k)
+            for l in (:x, :y, :z)
+                lk = Symbol(l, k)
+                haskey(plotattributes, lk) || (plotattributes[lk] = v)
+            end
+        end
+    end
+end
+
+&quot;&quot;&quot;
+    preprocess_axis_args!(plt, plotattributes, letter)
+
+This version additionally stores the letter name in  `plotattributes[:letter]`.
+&quot;&quot;&quot;
+function preprocess_axis_args!(plt, plotattributes, letter)
+    plotattributes[:letter] = letter
+    _preprocess_axis_args!(plt, plotattributes)
+end</code></pre><p>axis args in type recipes should only be applied to the current axis</p><pre><code class="language-julia">&quot;&quot;&quot;
+    postprocess_axis_args!(plt, plotattributes, letter)
+
+Removes the `:letter` key from `plotattributes` and does the same prepending of the letters as `preprocess_axis_args!`.
+&quot;&quot;&quot;
+function postprocess_axis_args!(plt, plotattributes, letter)
+    pop!(plotattributes, :letter)
+    if letter in (:x, :y, :z)
+        for (k, v) in plotattributes
+            if is_axis_attribute(plt, k)
+                pop!(plotattributes, k)
+                lk = Symbol(letter, k)
+                haskey(plotattributes, lk) || (plotattributes[lk] = v)
+            end
+        end
+    end
+end</code></pre><h2 id="User-recipes"><a class="docs-heading-anchor" href="#User-recipes">User recipes</a><a id="User-recipes-1"></a><a class="docs-heading-anchor-permalink" href="#User-recipes" title="Permalink"></a></h2><pre><code class="language-julia">&quot;&quot;&quot;
     process_userrecipe!(plt, attributes_list, attributes)
 
 Do plotting package specific post-processing and add series attributes to attributes_list.
@@ -111,4 +153,4 @@ Adds the series defined by `kw` to the plot object.
 For example Plots updates the current subplot arguments, expands extrema and pushes the
 the series to the series_list of `plt`.
 &quot;&quot;&quot;
-function add_series!(plt, kw) end</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../RecipesPipeline/">« RecipesPipeline</a><a class="docs-footer-nextpage" href="../user_recipe/">User Recipes »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 14 August 2020 08:25">Friday 14 August 2020</span>. Using Julia version 1.5.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+function add_series!(plt, kw) end</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../RecipesPipeline/">« RecipesPipeline</a><a class="docs-footer-nextpage" href="../user_recipe/">User Recipes »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 24 August 2020 16:53">Monday 24 August 2020</span>. Using Julia version 1.5.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

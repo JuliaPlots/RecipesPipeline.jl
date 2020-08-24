@@ -9,20 +9,20 @@ Apply the type recipe with signature `(::Type{T}, ::T)`.
 &quot;&quot;&quot;
 function _apply_type_recipe(plotattributes, v, letter)
     plt = plotattributes[:plot_object]
-    _preprocess_axis_args!(plt, plotattributes, letter)
+    preprocess_axis_args!(plt, plotattributes, letter)
     rdvec = RecipesBase.apply_recipe(plotattributes, typeof(v), v)
     warn_on_recipe_aliases!(plotattributes[:plot_object], plotattributes, :type, typeof(v))
-    _postprocess_axis_args!(plt, plotattributes, letter)
+    postprocess_axis_args!(plt, plotattributes, letter)
     return rdvec[1].args[1]
 end</code></pre><p>Handle type recipes when the recipe is defined on the elements. This sort of recipe should return a pair of functions... one to convert to number, and one to format tick values.</p><pre><code class="language-julia">function _apply_type_recipe(plotattributes, v::AbstractArray, letter)
     plt = plotattributes[:plot_object]
-    _preprocess_axis_args!(plt, plotattributes, letter)</code></pre><p>First we try to apply an array type recipe.</p><pre><code class="language-julia">    w = RecipesBase.apply_recipe(plotattributes, typeof(v), v)[1].args[1]
+    preprocess_axis_args!(plt, plotattributes, letter)</code></pre><p>First we try to apply an array type recipe.</p><pre><code class="language-julia">    w = RecipesBase.apply_recipe(plotattributes, typeof(v), v)[1].args[1]
     warn_on_recipe_aliases!(plt, plotattributes, :type, typeof(v))</code></pre><p>If the type did not change try it element-wise</p><pre><code class="language-julia">    if typeof(v) == typeof(w)
         isempty(skipmissing(v)) &amp;&amp; return Float64[]
         x = first(skipmissing(v))
         args = RecipesBase.apply_recipe(plotattributes, typeof(x), x)[1].args
         warn_on_recipe_aliases!(plt, plotattributes, :type, typeof(x))
-        _postprocess_axis_args!(plt, plotattributes, letter)
+        postprocess_axis_args!(plt, plotattributes, letter)
         if length(args) == 2 &amp;&amp; all(arg -&gt; arg isa Function, args)
             numfunc, formatter = args
             return Formatted(map(numfunc, v), formatter)
@@ -30,7 +30,7 @@ end</code></pre><p>Handle type recipes when the recipe is defined on the element
             return v
         end
     end
-    _postprocess_axis_args!(plt, plotattributes, letter)
+    postprocess_axis_args!(plt, plotattributes, letter)
     return w
 end</code></pre><p>special handling for Surface... need to properly unwrap and re-wrap</p><pre><code class="language-julia">_apply_type_recipe(
     plotattributes,
@@ -49,29 +49,4 @@ end</code></pre><p>don&#39;t do anything for datapoints or nothing</p><pre><code
     v::AbstractArray{&lt;:Union{AbstractFloat, Integer, AbstractString, Missing}},
     letter,
 ) = v
-_apply_type_recipe(plotattributes, v::Nothing, letter) = v</code></pre><p>axis args before type recipes should still be mapped to all axes</p><pre><code class="language-julia">function _preprocess_axis_args!(plt, plotattributes)
-    for (k, v) in plotattributes
-        if is_axis_attribute(plt, k)
-            pop!(plotattributes, k)
-            for l in (:x, :y, :z)
-                lk = Symbol(l, k)
-                haskey(plotattributes, lk) || (plotattributes[lk] = v)
-            end
-        end
-    end
-end
-function _preprocess_axis_args!(plt, plotattributes, letter)
-    plotattributes[:letter] = letter
-    _preprocess_axis_args!(plt, plotattributes)
-end</code></pre><p>axis args in type recipes should only be applied to the current axis</p><pre><code class="language-julia">function _postprocess_axis_args!(plt, plotattributes, letter)
-    pop!(plotattributes, :letter)
-    if letter in (:x, :y, :z)
-        for (k, v) in plotattributes
-            if is_axis_attribute(plt, k)
-                pop!(plotattributes, k)
-                lk = Symbol(letter, k)
-                haskey(plotattributes, lk) || (plotattributes[lk] = v)
-            end
-        end
-    end
-end</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../plot_recipe/">« Plot Recipes</a><a class="docs-footer-nextpage" href="../series_recipe/">Series Recipes »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 14 August 2020 08:25">Friday 14 August 2020</span>. Using Julia version 1.5.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+_apply_type_recipe(plotattributes, v::Nothing, letter) = v</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../plot_recipe/">« Plot Recipes</a><a class="docs-footer-nextpage" href="../series_recipe/">Series Recipes »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 24 August 2020 16:53">Monday 24 August 2020</span>. Using Julia version 1.5.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
