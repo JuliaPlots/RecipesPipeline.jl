@@ -91,7 +91,7 @@ This version additionally stores the letter name in  `plotattributes[:letter]`.
 """
 function preprocess_axis_args!(plt, plotattributes, letter)
     plotattributes[:letter] = letter
-    _preprocess_axis_args!(plt, plotattributes)
+    preprocess_axis_args!(plt, plotattributes)
 end
 
 # axis args in type recipes should only be applied to the current axis
