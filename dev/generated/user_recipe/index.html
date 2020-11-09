@@ -8,6 +8,7 @@ empy `args` is returned pop it from the vector, finish up, and it to vector of `
 processed series. When all arguments are processed return the series `Dict`.
 &quot;&quot;&quot;
 function _process_userrecipes!(plt, plotattributes, args)
+    @nospecialize
     still_to_process = _recipedata_vector(plt, plotattributes, args)</code></pre><p>For plotting recipes, we swap out the args and update the parameter dictionary.  We are keeping a stack of series that still need to be processed.</p><p>On each pass through the loop, we pop one off and apply the recipe. the recipe will return a list a Series objects. The ones that are finished (no more args) get added to the <code>kw_list</code>, and the ones that are not are placed on top of the stack and are then processed further.</p><pre><code class="language-julia">    kw_list = KW[]
     while !isempty(still_to_process)</code></pre><p>grab the first in line to be processed and either add it to the kw<em>list or pass it through apply</em>recipe to generate a list of RecipeData objects (data + attributes) for further processing.</p><pre><code class="language-julia">        next_series = popfirst!(still_to_process)</code></pre><p>recipedata should be of type RecipeData. if it&#39;s not then the inputs must not have been fully processed by recipes</p><pre><code class="language-julia">        if !(typeof(next_series) &lt;: RecipeData)
             error(&quot;Inputs couldn&#39;t be processed... expected RecipeData but got: $next_series&quot;)
@@ -17,12 +18,13 @@ function _process_userrecipes!(plt, plotattributes, args)
         else
             rd_list =
                 RecipesBase.apply_recipe(next_series.plotattributes, next_series.args...)
-            warn_on_recipe_aliases!(plt, rd_list, :user, next_series.args...)
+                warn_on_recipe_aliases!(plt, rd_list, :user, userrecipe_signature_string(next_series.args...))
             prepend!(still_to_process, rd_list)
         end
     end</code></pre><p>don&#39;t allow something else to handle it</p><pre><code class="language-julia">    plotattributes[:smooth] = false
     kw_list
 end</code></pre><p>TODO Move this to api.jl?</p><pre><code class="language-julia">function _recipedata_vector(plt, plotattributes, args)
+    @nospecialize
     still_to_process = RecipeData[]</code></pre><p>the grouping mechanism is a recipe on a GroupBy object we simply add the GroupBy object to the front of the args list to allow the recipe to be applied</p><pre><code class="language-julia">    if haskey(plotattributes, :group)
         args = (_extract_group_attributes(plotattributes[:group], args...), args...)
     end</code></pre><p>if we were passed a vector/matrix of seriestypes and there&#39;s more than one row, we want to duplicate the inputs, once for each seriestype row.</p><pre><code class="language-julia">    if !isempty(args)
@@ -39,6 +41,7 @@ end</code></pre><p>TODO Move this to api.jl?</p><pre><code class="language-julia
 end
 
 function _expand_seriestype_array(plotattributes, args)
+    @nospecialize
     sts = get(plotattributes, :seriestype, :path)
     if typeof(sts) &lt;: AbstractArray
         reset_kw!(plotattributes, :seriestype)
@@ -58,7 +61,7 @@ end
 function _finish_userrecipe!(plt, kw_list, recipedata)</code></pre><p>when the arg tuple is empty, that means there&#39;s nothing left to recursively process... finish up and add to the kw_list</p><pre><code class="language-julia">    kw = recipedata.plotattributes
     preprocess_attributes!(plt, kw)</code></pre><p>if there was a grouping, filter the data here</p><pre><code class="language-julia">    _filter_input_data!(kw)
     process_userrecipe!(plt, kw_list, kw)
-end</code></pre><hr/><h2 id="Fallback-user-recipes"><a class="docs-heading-anchor" href="#Fallback-user-recipes">Fallback user recipes</a><a id="Fallback-user-recipes-1"></a><a class="docs-heading-anchor-permalink" href="#Fallback-user-recipes" title="Permalink"></a></h2><p>These call <code>_apply_type_recipe</code> in type_recipe.jl and finally the <code>SliceIt</code> recipe in series.jl.</p><p>handle &quot;type recipes&quot; by converting inputs, and then either re-calling or slicing</p><pre><code class="language-julia">@recipe function f(x, y, z)
+end</code></pre><hr/><h2 id="Fallback-user-recipes"><a class="docs-heading-anchor" href="#Fallback-user-recipes">Fallback user recipes</a><a id="Fallback-user-recipes-1"></a><a class="docs-heading-anchor-permalink" href="#Fallback-user-recipes" title="Permalink"></a></h2><pre><code class="language-julia">@nospecialize</code></pre><p>These call <code>_apply_type_recipe</code> in type_recipe.jl and finally the <code>SliceIt</code> recipe in series.jl.</p><p>handle &quot;type recipes&quot; by converting inputs, and then either re-calling or slicing</p><pre><code class="language-julia">@recipe function f(x, y, z)
     wrap_surfaces!(plotattributes, x, y, z)
     did_replace = false
     newx = _apply_type_recipe(plotattributes, x, :x)
@@ -193,13 +196,7 @@ end
     umin::Number,
     umax::Number,
     n = 200,
-) where {F &lt;: Function, G &lt;: Function} = fx, fy, range(umin, stop = umax, length = n)
-
-function _scaled_adapted_grid(f, xscale, yscale, xmin, xmax)
-    (xf, xinv), (yf, yinv) = ((scale_func(s), inverse_scale_func(s)) for s in (xscale, yscale))
-    xs, ys = PlotUtils.adapted_grid(yf ∘ f ∘ xinv, xf.((xmin, xmax)))
-    xinv.(xs), yinv.(ys)
-end</code></pre><p>special handling... 3D parametric function(s)</p><pre><code class="language-julia">@recipe function f(
+) where {F &lt;: Function, G &lt;: Function} = fx, fy, range(umin, stop = umax, length = n)</code></pre><p>special handling... 3D parametric function(s)</p><pre><code class="language-julia">@recipe function f(
     fx::FuncOrFuncs{F},
     fy::FuncOrFuncs{G},
     fz::FuncOrFuncs{H},
@@ -227,4 +224,12 @@ end
     yguide --&gt; string(K[2])
     zguide --&gt; string(K[3])
     return Tuple.(ntv)
-end</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../api/">« API</a><a class="docs-footer-nextpage" href="../plot_recipe/">Plot Recipes »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 9 November 2020 12:20">Monday 9 November 2020</span>. Using Julia version 1.5.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end
+
+@specialize
+
+function _scaled_adapted_grid(f, xscale, yscale, xmin, xmax)
+    (xf, xinv), (yf, yinv) = ((scale_func(s), inverse_scale_func(s)) for s in (xscale, yscale))
+    xs, ys = PlotUtils.adapted_grid(yf ∘ f ∘ xinv, xf.((xmin, xmax)))
+    xinv.(xs), yinv.(ys)
+end</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../api/">« API</a><a class="docs-footer-nextpage" href="../plot_recipe/">Plot Recipes »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 9 November 2020 18:04">Monday 9 November 2020</span>. Using Julia version 1.5.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
