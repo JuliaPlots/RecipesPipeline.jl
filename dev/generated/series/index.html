@@ -59,12 +59,13 @@ _nobigs(v::AVec{BigFloat}) = map(Float64, v)
 _nobigs(v::AVec{BigInt}) = map(Int64, v)
 _nobigs(v) = v
 
-@noinline function _compute_xyz(x, y, z)
+@noinline function _compute_xyz(x, y, z, nice_error=false)
     x = _compute_x(x, y, z)
     y = _compute_y(x, y, z)
     z = _compute_z(x, y, z)
-    if !isnothing(x) &amp;&amp; isnothing(z)
-        n = size(x,1)</code></pre><p>Workaround: Allow y to be one element shorter than x to support binning edges in x, e.g. for histograms</p><pre><code class="language-julia">        !isnothing(y) &amp;&amp; (size(y,1) != n &amp;&amp; size(y,1) != n - 1) &amp;&amp; error(&quot;Expects $n elements in each col of y, found $(size(y,1)).&quot;)
+    if nice_error &amp;&amp; isnothing(z) # don&#39;t touch 3D plots
+        n = size(x,1)
+        !isnothing(y) &amp;&amp; size(y,1) != n &amp;&amp; error(&quot;Expects $n elements in each col of y, found $(size(y,1)).&quot;)
     end
     _nobigs(x), _nobigs(y), _nobigs(z)
 end</code></pre><p>not allowed</p><pre><code class="language-julia">_compute_xyz(x::Nothing, y::FuncOrFuncs{F}, z) where {F &lt;: Function} =
@@ -72,7 +73,8 @@ end</code></pre><p>not allowed</p><pre><code class="language-julia">_compute_xyz
 _compute_xyz(x::Nothing, y::Nothing, z::FuncOrFuncs{F}) where {F &lt;: Function} =
     error(&quot;If you want to plot the function `$z`, you need to define x and y values!&quot;)
 _compute_xyz(x::Nothing, y::Nothing, z::Nothing) = error(&quot;x/y/z are all nothing!&quot;)</code></pre><hr/><p>we are going to build recipes to do the processing and splitting of the args</p><hr/><h2 id="The-catch-all-SliceIt-recipe"><a class="docs-heading-anchor" href="#The-catch-all-SliceIt-recipe">The catch-all SliceIt recipe</a><a id="The-catch-all-SliceIt-recipe-1"></a><a class="docs-heading-anchor-permalink" href="#The-catch-all-SliceIt-recipe" title="Permalink"></a></h2><p>ensure we dispatch to the slicer</p><pre><code class="language-julia">struct SliceIt end</code></pre><p>TODO: Should ribbon and fillrange be handled by the plotting package?</p><p>The <code>SliceIt</code> recipe finishes user and type recipe processing. It splits processed data into individual series data, stores in copied <code>plotattributes</code> for each series and returns no arguments.</p><pre><code class="language-julia">@recipe function f(::Type{SliceIt}, x, y, z)
-    @nospecialize</code></pre><p>handle data with formatting attached</p><pre><code class="language-julia">    if typeof(x) &lt;: Formatted
+    @nospecialize
+    nice_error = (x isa AbstractVector) &amp;&amp; (y isa AbstractMatrix) # only check in the trivial case</code></pre><p>handle data with formatting attached</p><pre><code class="language-julia">    if typeof(x) &lt;: Formatted
         xformatter := x.formatter
         x = x.data
     end
@@ -103,7 +105,7 @@ _compute_xyz(x::Nothing, y::Nothing, z::Nothing) = error(&quot;x/y/z are all not
     if mx &gt; 0 &amp;&amp; my &gt; 0 &amp;&amp; mz &gt; 0
         for i in 1:max(mx, my, mz)</code></pre><p>add a new series</p><pre><code class="language-julia">            di = copy(plotattributes)
             xi, yi, zi = xs[mod1(i, mx)], ys[mod1(i, my)], zs[mod1(i, mz)]
-            di[:x], di[:y], di[:z] = _compute_xyz(xi, yi, zi)</code></pre><p>handle fillrange</p><pre><code class="language-julia">            fr = fillranges[mod1(i, mf)]
+            di[:x], di[:y], di[:z] = _compute_xyz(xi, yi, zi, nice_error)</code></pre><p>handle fillrange</p><pre><code class="language-julia">            fr = fillranges[mod1(i, mf)]
             di[:fillrange] = isa(fr, Function) ? map(fr, di[:x]) : fr</code></pre><p>handle ribbons</p><pre><code class="language-julia">            rib = ribbons[mod1(i, mr)]
             di[:ribbon] = isa(rib, Function) ? map(rib, di[:x]) : rib
 
@@ -111,4 +113,4 @@ _compute_xyz(x::Nothing, y::Nothing, z::Nothing) = error(&quot;x/y/z are all not
         end
     end
     nothing  # don&#39;t add a series for the main block
-end</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../recipes/">« Default recipes</a><a class="docs-footer-nextpage" href="../group/">Grouping »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 15 November 2020 14:05">Sunday 15 November 2020</span>. Using Julia version 1.5.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../recipes/">« Default recipes</a><a class="docs-footer-nextpage" href="../group/">Grouping »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 15 November 2020 16:30">Sunday 15 November 2020</span>. Using Julia version 1.5.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
