@@ -27,10 +27,10 @@ function _process_plotrecipe(plt, kw, kw_list, still_to_process)
         push!(kw_list, kw)
         return
     end
-    try
-        st = kw[:seriestype]
-        st = kw[:seriestype] = type_alias(plt, st)
-        datalist = RecipesBase.apply_recipe(kw, Val{st}, plt)
+    st = kw[:seriestype]
+    st = kw[:seriestype] = type_alias(plt, st)
+    datalist = RecipesBase.apply_recipe(kw, Val{st}, plt)
+    if !isnothing(datalist)
         warn_on_recipe_aliases!(plt, datalist, :plot, st)
         for data in datalist
             preprocess_attributes!(plt, data.plotattributes)
@@ -39,12 +39,8 @@ function _process_plotrecipe(plt, kw, kw_list, still_to_process)
             end
             push!(still_to_process, data.plotattributes)
         end
-    catch err
-        if err isa MethodError && occursin("plot recipe", err.args)
-            push!(kw_list, kw)
-        else
-            rethrow()
-        end
+    else
+        push!(kw_list, kw)
     end
     return
 end
