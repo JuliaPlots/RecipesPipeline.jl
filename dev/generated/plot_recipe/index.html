@@ -28,16 +28,19 @@ function _process_plotrecipe(plt, kw, kw_list, still_to_process)
         st = kw[:seriestype]
         st = kw[:seriestype] = type_alias(plt, st)
         datalist = RecipesBase.apply_recipe(kw, Val{st}, plt)
-        warn_on_recipe_aliases!(plt, datalist, :plot, st)
-        for data in datalist
-            preprocess_attributes!(plt, data.plotattributes)
-            if data.plotattributes[:seriestype] == st
-                error(&quot;Plot recipe $st returned the same seriestype: $(data.plotattributes)&quot;)
+        if !isnothing(datalist)
+            warn_on_recipe_aliases!(plt, datalist, :plot, st)
+            for data in datalist
+                preprocess_attributes!(plt, data.plotattributes)
+                if data.plotattributes[:seriestype] == st
+                    error(&quot;Plot recipe $st returned the same seriestype: $(data.plotattributes)&quot;)
+                end
+                push!(still_to_process, data.plotattributes)
             end
-            push!(still_to_process, data.plotattributes)
+        else
+            push!(kw_list, kw)
         end
-    catch err
-        if err isa MethodError &amp;&amp; occursin(&quot;plot recipe&quot;, err.args)
+    catch err</code></pre><p>the try/catch block can be removed when Plots.jl makes the compensating change</p><pre><code class="language-julia hljs">        if err isa MethodError &amp;&amp; occursin(&quot;plot recipe&quot;, err.args)
             push!(kw_list, kw)
         else
             rethrow()
@@ -46,4 +49,4 @@ function _process_plotrecipe(plt, kw, kw_list, still_to_process)
     return
 end
 
-@specialize</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../user_recipe/">« User Recipes</a><a class="docs-footer-nextpage" href="../type_recipe/">Type Recipes »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.5 on <span class="colophon-date" title="Wednesday 25 August 2021 21:59">Wednesday 25 August 2021</span>. Using Julia version 1.6.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+@specialize</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../user_recipe/">« User Recipes</a><a class="docs-footer-nextpage" href="../type_recipe/">Type Recipes »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.5 on <span class="colophon-date" title="Thursday 26 August 2021 12:23">Thursday 26 August 2021</span>. Using Julia version 1.6.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
