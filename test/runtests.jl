@@ -29,4 +29,7 @@ using TestImages
         end
     end
     end
+    @testset "group" begin
+        include("test_group.jl")
+    @end
 end
