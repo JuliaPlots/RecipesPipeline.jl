@@ -23,13 +23,13 @@ using TestImages
     #     include("makie.jl")
     # end end
     @testset "Plots tests" begin
-    for i in eachindex(Plots._examples)
-        if i ∉ Plots._backend_skips[:gr]
-            @test Plots.test_examples(:gr, i, disp=false) isa Plots.Plot
+        for i in eachindex(Plots._examples)
+            if i ∉ Plots._backend_skips[:gr]
+                @test Plots.test_examples(:gr, i, disp=false) isa Plots.Plot
+            end
         end
-    end
     end
     @testset "group" begin
         include("test_group.jl")
-    @end
+    end
 end
