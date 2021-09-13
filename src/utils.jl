@@ -208,13 +208,7 @@ inverse_scale_func(scale::Symbol) =
 # ## Unzip
 # --------------------------------
 
-for i in 2:4
-    @eval begin
-        unzip(v::AVec{<:Tuple}) =
-            $(Expr(:tuple, (:([t[$j] for t in v]) for j in 1:length(v[1]))...))
-    end
-end
-
+unzip(v::AVec{<:Tuple}) = tuple((([t[j] for t in v]) for j in 1:length(v[1]))...)
 
 # --------------------------------
 # ## Map functions on vectors
