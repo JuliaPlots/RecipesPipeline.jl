@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Series handling · RecipesPipeline.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">RecipesPipeline.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">RecipesPipeline.jl</a></li><li><span class="tocitem">Developer manual</span><ul><li><a class="tocitem" href="../../api/">Public API</a></li><li><a class="tocitem" href="../../recipes/">Recipes</a></li></ul></li><li><a class="tocitem" href="../../reference/">Reference</a></li><li><span class="tocitem">Source code</span><ul><li><a class="tocitem" href="../RecipesPipeline/">RecipesPipeline</a></li><li><a class="tocitem" href="../api/">API</a></li><li><a class="tocitem" href="../user_recipe/">User Recipes</a></li><li><a class="tocitem" href="../plot_recipe/">-</a></li><li><a class="tocitem" href="../type_recipe/">Type Recipes</a></li><li><a class="tocitem" href="../series_recipe/">Series Recipes</a></li><li><a class="tocitem" href="../group/">Grouping</a></li><li><a class="tocitem" href="../recipes/">Default recipes</a></li><li class="is-active"><a class="tocitem" href>Series handling</a><ul class="internal"><li><a class="tocitem" href="#The-catch-all-SliceIt-recipe"><span>The catch-all SliceIt recipe</span></a></li></ul></li><li><a class="tocitem" href="../group/">Grouping</a></li><li><a class="tocitem" href="../utils/">Utilities</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Source code</a></li><li class="is-active"><a href>Series handling</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Series handling</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaPlots/RecipesPipeline.jl/blob/master/docs/src/generated/series.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Series-handling"><a class="docs-heading-anchor" href="#Series-handling">Series handling</a><a id="Series-handling-1"></a><a class="docs-heading-anchor-permalink" href="#Series-handling" title="Permalink"></a></h1><pre><code class="language-julia hljs">const FuncOrFuncs{F} = Union{F, Vector{F}, Matrix{F}}
+const MaybeNumber = Union{Number, Missing}
+const MaybeString = Union{AbstractString, Missing}
+const DataPoint = Union{MaybeNumber, MaybeString}
+
+_prepare_series_data(x) = error(&quot;Cannot convert $(typeof(x)) to series data for plotting&quot;)
+_prepare_series_data(::Nothing) = nothing
+_prepare_series_data(t::Tuple{T, T}) where {T &lt;: Number} = t
+_prepare_series_data(f::Function) = f
+_prepare_series_data(ar::AbstractRange{&lt;:Number}) = ar
+function _prepare_series_data(a::AbstractArray{&lt;:MaybeNumber})
+    f = isimmutable(a) ? replace : replace!
+    a = f(x -&gt; ismissing(x) || isinf(x) ? NaN : x, map(float, a))
+end
+_prepare_series_data(a::AbstractArray{&lt;:Missing}) = fill(NaN, axes(a))
+_prepare_series_data(a::AbstractArray{&lt;:MaybeString}) =
+    replace(x -&gt; ismissing(x) ? &quot;&quot; : x, a)
+_prepare_series_data(s::Surface{&lt;:AMat{&lt;:MaybeNumber}}) =
+    Surface(_prepare_series_data(s.surf))
+_prepare_series_data(s::Surface) = s  # non-numeric Surface, such as an image
+_prepare_series_data(v::Volume) =
+    Volume(_prepare_series_data(v.v), v.x_extents, v.y_extents, v.z_extents)</code></pre><p>default: assume x represents a single series</p><pre><code class="language-julia hljs">_series_data_vector(x, plotattributes) = [_prepare_series_data(x)]</code></pre><p>fixed number of blank series</p><pre><code class="language-julia hljs">_series_data_vector(n::Integer, plotattributes) = [zeros(0) for i in 1:n]</code></pre><p>vector of data points is a single series</p><pre><code class="language-julia hljs">_series_data_vector(v::AVec{&lt;:DataPoint}, plotattributes) = [_prepare_series_data(v)]</code></pre><p>list of things (maybe other vectors, functions, or something else)</p><pre><code class="language-julia hljs">function _series_data_vector(v::AVec, plotattributes)
+    if all(x -&gt; x isa MaybeNumber, v)
+        _series_data_vector(Vector{MaybeNumber}(v), plotattributes)
+    elseif all(x -&gt; x isa MaybeString, v)
+        _series_data_vector(Vector{MaybeString}(v), plotattributes)
+    else
+        vcat((_series_data_vector(vi, plotattributes) for vi in v)...)
+    end
+end</code></pre><p>Matrix is split into columns</p><pre><code class="language-julia hljs">function _series_data_vector(v::AMat{&lt;:DataPoint}, plotattributes)
+    if is3d(plotattributes)
+        [_prepare_series_data(Surface(v))]
+    else
+        [_prepare_series_data(v[:, i]) for i in axes(v, 2)]
+    end
+end</code></pre><hr/><p>Fillranges &amp; ribbons</p><pre><code class="language-julia hljs">_process_fillrange(range::Number, plotattributes) = [range]
+_process_fillrange(range, plotattributes) = _series_data_vector(range, plotattributes)
+
+_process_ribbon(ribbon::Number, plotattributes) = [ribbon]
+_process_ribbon(ribbon, plotattributes) = _series_data_vector(ribbon, plotattributes)</code></pre><p>ribbon as a tuple: (lower<em>ribbons, upper</em>ribbons)</p><pre><code class="language-julia hljs">_process_ribbon(ribbon::Tuple{S, T}, plotattributes) where {S, T} = collect(zip(
+    _series_data_vector(ribbon[1], plotattributes),
+    _series_data_vector(ribbon[2], plotattributes),
+))</code></pre><hr/><pre><code class="language-julia hljs">_compute_x(x::Nothing, y::Nothing, z) = axes(z, 1)
+_compute_x(x::Nothing, y, z) = axes(y, 1)
+_compute_x(x::Function, y, z) = map(x, y)
+_compute_x(x, y, z) = x
+
+_compute_y(x::Nothing, y::Nothing, z) = axes(z, 2)
+_compute_y(x, y::Function, z) = map(y, x)
+_compute_y(x, y, z) = y
+
+_compute_z(x, y, z::Function) = map(z, x, y)
+_compute_z(x, y, z::AbstractMatrix) = Surface(z)
+_compute_z(x, y, z::Nothing) = nothing
+_compute_z(x, y, z) = z
+
+_nobigs(v::AVec{BigFloat}) = map(Float64, v)
+_nobigs(v::AVec{BigInt}) = map(Int64, v)
+_nobigs(v) = v
+
+@noinline function _compute_xyz(x, y, z, nice_error=false)
+    x = _compute_x(x, y, z)
+    y = _compute_y(x, y, z)
+    z = _compute_z(x, y, z)
+    if nice_error &amp;&amp; isnothing(z) # don&#39;t touch 3D plots
+        n = size(x,1)
+        !isnothing(y) &amp;&amp; size(y,1) != n &amp;&amp; error(&quot;Expects $n elements in each col of y, found $(size(y,1)).&quot;)
+    end
+    _nobigs(x), _nobigs(y), _nobigs(z)
+end</code></pre><p>not allowed</p><pre><code class="language-julia hljs">_compute_xyz(x::Nothing, y::FuncOrFuncs{F}, z) where {F &lt;: Function} =
+    error(&quot;If you want to plot the function `$y`, you need to define the x values!&quot;)
+_compute_xyz(x::Nothing, y::Nothing, z::FuncOrFuncs{F}) where {F &lt;: Function} =
+    error(&quot;If you want to plot the function `$z`, you need to define x and y values!&quot;)
+_compute_xyz(x::Nothing, y::Nothing, z::Nothing) = error(&quot;x/y/z are all nothing!&quot;)</code></pre><hr/><p>we are going to build recipes to do the processing and splitting of the args</p><hr/><h2 id="The-catch-all-SliceIt-recipe"><a class="docs-heading-anchor" href="#The-catch-all-SliceIt-recipe">The catch-all SliceIt recipe</a><a id="The-catch-all-SliceIt-recipe-1"></a><a class="docs-heading-anchor-permalink" href="#The-catch-all-SliceIt-recipe" title="Permalink"></a></h2><p>ensure we dispatch to the slicer</p><pre><code class="language-julia hljs">struct SliceIt end</code></pre><p>TODO: Should ribbon and fillrange be handled by the plotting package?</p><p>The <code>SliceIt</code> recipe finishes user and type recipe processing. It splits processed data into individual series data, stores in copied <code>plotattributes</code> for each series and returns no arguments.</p><pre><code class="language-julia hljs">@recipe function f(::Type{SliceIt}, x, y, z)
+    @nospecialize
+    nice_error = (x isa AbstractVector) &amp;&amp; (y isa AbstractMatrix) # only check in the trivial case</code></pre><p>handle data with formatting attached</p><pre><code class="language-julia hljs">    if typeof(x) &lt;: Formatted
+        xformatter := x.formatter
+        x = x.data
+    end
+    if typeof(y) &lt;: Formatted
+        yformatter := y.formatter
+        y = y.data
+    end
+    if typeof(z) &lt;: Formatted
+        zformatter := z.formatter
+        z = z.data
+    end
+
+    xs = _series_data_vector(x, plotattributes)
+    ys = _series_data_vector(y, plotattributes)
+    zs = _series_data_vector(z, plotattributes)
+
+    fr = pop!(plotattributes, :fillrange, nothing)
+    fillranges = _process_fillrange(fr, plotattributes)
+    mf = length(fillranges)
+
+    rib = pop!(plotattributes, :ribbon, nothing)
+    ribbons = _process_ribbon(rib, plotattributes)
+    mr = length(ribbons)
+
+    mx = length(xs)
+    my = length(ys)
+    mz = length(zs)
+    if mx &gt; 0 &amp;&amp; my &gt; 0 &amp;&amp; mz &gt; 0
+        for i in 1:max(mx, my, mz)</code></pre><p>add a new series</p><pre><code class="language-julia hljs">            di = copy(plotattributes)
+            xi, yi, zi = xs[mod1(i, mx)], ys[mod1(i, my)], zs[mod1(i, mz)]
+            di[:x], di[:y], di[:z] = _compute_xyz(xi, yi, zi, nice_error)</code></pre><p>handle fillrange</p><pre><code class="language-julia hljs">            fr = fillranges[mod1(i, mf)]
+            di[:fillrange] = isa(fr, Function) ? map(fr, di[:x]) : fr</code></pre><p>handle ribbons</p><pre><code class="language-julia hljs">            rib = ribbons[mod1(i, mr)]
+            di[:ribbon] = isa(rib, Function) ? map(rib, di[:x]) : rib
+
+            push!(series_list, RecipeData(di, ()))
+        end
+    end
+    nothing  # don&#39;t add a series for the main block
+end</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../recipes/">« Default recipes</a><a class="docs-footer-nextpage" href="../group/">Grouping »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.6 on <span class="colophon-date" title="Monday 13 September 2021 15:31">Monday 13 September 2021</span>. Using Julia version 1.6.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
