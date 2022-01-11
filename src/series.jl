@@ -144,11 +144,11 @@ struct SliceIt end
     ys = _series_data_vector(y, plotattributes)
     zs = _series_data_vector(z, plotattributes)
 
-    fr = pop!(plotattributes, :fillrange, nothing)
+    fr = pop!(plotattributes, :fillrange, series_defaults(plotattributes[:plot_object])[:fillrange])
     fillranges = _process_fillrange(fr, plotattributes)
     mf = length(fillranges)
 
-    rib = pop!(plotattributes, :ribbon, nothing)
+    rib = pop!(plotattributes, :ribbon, series_defaults(plotattributes[:plot_object])[:ribbon])
     ribbons = _process_ribbon(rib, plotattributes)
     mr = length(ribbons)
 
