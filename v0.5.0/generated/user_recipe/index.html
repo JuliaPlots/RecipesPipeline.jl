@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>User Recipes · RecipesPipeline.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">RecipesPipeline.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">RecipesPipeline.jl</a></li><li><span class="tocitem">Developer manual</span><ul><li><a class="tocitem" href="../../api/">Public API</a></li><li><a class="tocitem" href="../../recipes/">Recipes</a></li></ul></li><li><a class="tocitem" href="../../reference/">Reference</a></li><li><span class="tocitem">Source code</span><ul><li><a class="tocitem" href="../RecipesPipeline/">RecipesPipeline</a></li><li><a class="tocitem" href="../api/">API</a></li><li class="is-active"><a class="tocitem" href>User Recipes</a><ul class="internal"><li><a class="tocitem" href="#Fallback-user-recipes"><span>Fallback user recipes</span></a></li><li><a class="tocitem" href="#Special-Cases"><span>Special Cases</span></a></li></ul></li><li><a class="tocitem" href="../plot_recipe/">-</a></li><li><a class="tocitem" href="../type_recipe/">Type Recipes</a></li><li><a class="tocitem" href="../series_recipe/">Series Recipes</a></li><li><a class="tocitem" href="../group/">Grouping</a></li><li><a class="tocitem" href="../recipes/">Default recipes</a></li><li><a class="tocitem" href="../series/">Series handling</a></li><li><a class="tocitem" href="../group/">Grouping</a></li><li><a class="tocitem" href="../utils/">Utilities</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Source code</a></li><li class="is-active"><a href>User Recipes</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>User Recipes</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaPlots/RecipesPipeline.jl/blob/master/docs/src/generated/user_recipe.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="User-Recipes"><a class="docs-heading-anchor" href="#User-Recipes">User Recipes</a><a id="User-Recipes-1"></a><a class="docs-heading-anchor-permalink" href="#User-Recipes" title="Permalink"></a></h1><pre><code class="language-julia hljs">&quot;&quot;&quot;
+    _process_userrecipes(plt, plotattributes, args)
+
+Wrap input arguments in a `RecipeData&#39; vector and recursively apply user recipes and type
+recipes on the first element. Prepend the returned `RecipeData` vector. If an element with
+empy `args` is returned pop it from the vector, finish up, and it to vector of `Dict`s with
+processed series. When all arguments are processed return the series `Dict`.
+&quot;&quot;&quot;
+function _process_userrecipes!(plt, plotattributes, args)
+    @nospecialize
+    still_to_process = _recipedata_vector(plt, plotattributes, args)</code></pre><p>For plotting recipes, we swap out the args and update the parameter dictionary.  We are keeping a stack of series that still need to be processed.</p><p>On each pass through the loop, we pop one off and apply the recipe. the recipe will return a list a Series objects. The ones that are finished (no more args) get added to the <code>kw_list</code>, and the ones that are not are placed on top of the stack and are then processed further.</p><pre><code class="language-julia hljs">    kw_list = KW[]
+    while !isempty(still_to_process)</code></pre><p>grab the first in line to be processed and either add it to the kw<em>list or pass it through apply</em>recipe to generate a list of RecipeData objects (data + attributes) for further processing.</p><pre><code class="language-julia hljs">        next_series = popfirst!(still_to_process)</code></pre><p>recipedata should be of type RecipeData. if it&#39;s not then the inputs must not have been fully processed by recipes</p><pre><code class="language-julia hljs">        if !(typeof(next_series) &lt;: RecipeData)
+            error(&quot;Inputs couldn&#39;t be processed... expected RecipeData but got: $next_series&quot;)
+        end
+        if isempty(next_series.args)
+            _finish_userrecipe!(plt, kw_list, next_series)
+        else
+            rd_list =
+                RecipesBase.apply_recipe(next_series.plotattributes, next_series.args...)
+                warn_on_recipe_aliases!(plt, rd_list, :user, next_series.args)
+            prepend!(still_to_process, rd_list)
+        end
+    end</code></pre><p>don&#39;t allow something else to handle it</p><pre><code class="language-julia hljs">    plotattributes[:smooth] = false
+    kw_list
+end</code></pre><p>TODO Move this to api.jl?</p><pre><code class="language-julia hljs">function _recipedata_vector(plt, plotattributes, args)
+    @nospecialize
+    still_to_process = RecipeData[]</code></pre><p>the grouping mechanism is a recipe on a GroupBy object we simply add the GroupBy object to the front of the args list to allow the recipe to be applied</p><pre><code class="language-julia hljs">    if haskey(plotattributes, :group)
+        args = (_extract_group_attributes(plotattributes[:group], args...), args...)
+    end</code></pre><p>if we were passed a vector/matrix of seriestypes and there&#39;s more than one row, we want to duplicate the inputs, once for each seriestype row.</p><pre><code class="language-julia hljs">    if !isempty(args)
+        append!(still_to_process, _expand_seriestype_array(plotattributes, args))
+    end</code></pre><p>remove subplot and axis args from plotattributes... they will be passed through in the kw_list</p><pre><code class="language-julia hljs">    if !isempty(args)
+        for (k, v) in plotattributes
+            if is_subplot_attribute(plt, k) || is_axis_attribute(plt, k)
+                reset_kw!(plotattributes, k)
+            end
+        end
+    end
+
+    still_to_process
+end
+
+function _expand_seriestype_array(plotattributes, args)
+    @nospecialize
+    sts = get(plotattributes, :seriestype, :path)
+    if typeof(sts) &lt;: AbstractArray
+        reset_kw!(plotattributes, :seriestype)
+        rd = Vector{RecipeData}(undef, size(sts, 1))
+        for r in axes(sts, 1)
+            dc = copy(plotattributes)
+            dc[:seriestype] = sts[r:r, :]
+            rd[r] = RecipeData(dc, args)
+        end
+        rd
+    else
+        RecipeData[RecipeData(copy(plotattributes), args)]
+    end
+end
+
+
+function _finish_userrecipe!(plt, kw_list, recipedata)</code></pre><p>when the arg tuple is empty, that means there&#39;s nothing left to recursively process... finish up and add to the kw_list</p><pre><code class="language-julia hljs">    kw = recipedata.plotattributes
+    preprocess_attributes!(plt, kw)</code></pre><p>if there was a grouping, filter the data here</p><pre><code class="language-julia hljs">    _filter_input_data!(kw)
+    process_userrecipe!(plt, kw_list, kw)
+end</code></pre><hr/><h2 id="Fallback-user-recipes"><a class="docs-heading-anchor" href="#Fallback-user-recipes">Fallback user recipes</a><a id="Fallback-user-recipes-1"></a><a class="docs-heading-anchor-permalink" href="#Fallback-user-recipes" title="Permalink"></a></h2><pre><code class="language-julia hljs">@nospecialize</code></pre><p>These call <code>_apply_type_recipe</code> in type_recipe.jl and finally the <code>SliceIt</code> recipe in series.jl.</p><p>handle &quot;type recipes&quot; by converting inputs, and then either re-calling or slicing</p><pre><code class="language-julia hljs">@recipe function f(x, y, z)
+    wrap_surfaces!(plotattributes, x, y, z)
+    did_replace = false
+    newx = _apply_type_recipe(plotattributes, x, :x)
+    x === newx || (did_replace = true)
+    newy = _apply_type_recipe(plotattributes, y, :y)
+    y === newy || (did_replace = true)
+    newz = _apply_type_recipe(plotattributes, z, :z)
+    z === newz || (did_replace = true)
+    if did_replace
+        newx, newy, newz
+    else
+        SliceIt, x, y, z
+    end
+end
+@recipe function f(x, y)
+    wrap_surfaces!(plotattributes, x, y)
+    did_replace = false
+    newx = _apply_type_recipe(plotattributes, x, :x)
+    x === newx || (did_replace = true)
+    newy = _apply_type_recipe(plotattributes, y, :y)
+    y === newy || (did_replace = true)
+    if did_replace
+        newx, newy
+    else
+        SliceIt, x, y, nothing
+    end
+end
+@recipe function f(y)
+    wrap_surfaces!(plotattributes, y)
+    newy = _apply_type_recipe(plotattributes, y, :y)
+    if y !== newy
+        newy
+    else
+        SliceIt, nothing, y, nothing
+    end
+end</code></pre><p>if there&#39;s more than 3 inputs, it can&#39;t be passed directly to SliceIt so we&#39;ll apply<em>type</em>recipe to all of them</p><pre><code class="language-julia hljs">@recipe function f(v1, v2, v3, v4, vrest...)
+    did_replace = false
+    newargs = map(
+        v -&gt; begin
+            newv = _apply_type_recipe(plotattributes, v, :unknown)
+            if newv !== v
+                did_replace = true
+            end
+            newv
+        end,
+        (v1, v2, v3, v4, vrest...),
+    )
+    if !did_replace
+        error(&quot;Couldn&#39;t process recipe args: $(map(typeof, (v1, v2, v3, v4, vrest...)))&quot;)
+    end
+    newargs
+end</code></pre><p>helper function to ensure relevant attributes are wrapped by Surface</p><pre><code class="language-julia hljs">function wrap_surfaces!(plotattributes, args...) end
+wrap_surfaces!(plotattributes, x::AMat, y::AMat, z::AMat) = wrap_surfaces!(plotattributes)
+wrap_surfaces!(plotattributes, x::AVec, y::AVec, z::AMat) = wrap_surfaces!(plotattributes)
+function wrap_surfaces!(plotattributes, x::AVec, y::AVec, z::Surface)
+    wrap_surfaces!(plotattributes)
+end
+function wrap_surfaces!(plotattributes)
+    if haskey(plotattributes, :fill_z)
+        v = plotattributes[:fill_z]
+        if !isa(v, Surface)
+            plotattributes[:fill_z] = Surface(v)
+        end
+    end
+end</code></pre><hr/><h2 id="Special-Cases"><a class="docs-heading-anchor" href="#Special-Cases">Special Cases</a><a id="Special-Cases-1"></a><a class="docs-heading-anchor-permalink" href="#Special-Cases" title="Permalink"></a></h2><hr/><p>1 argument</p><pre><code class="language-julia hljs">@recipe function f(n::Integer)
+    if is3d(plotattributes)
+        SliceIt, n, n, n
+    else
+        SliceIt, n, n, nothing
+    end
+end</code></pre><p>return a surface if this is a 3d plot, otherwise let it be sliced up</p><pre><code class="language-julia hljs">@recipe function f(mat::AMat)
+    if is3d(plotattributes)
+        n, m = axes(mat)
+        m, n, Surface(mat)
+    else
+        nothing, mat, nothing
+    end
+end</code></pre><p>if a matrix is wrapped by Formatted, do similar logic, but wrap data with Surface</p><pre><code class="language-julia hljs">@recipe function f(fmt::Formatted{&lt;:AMat})
+    if is3d(plotattributes)
+        mat = fmt.data
+        n, m = axes(mat)
+        m, n, Formatted(Surface(mat), fmt.formatter)
+    else
+        nothing, fmt, nothing
+    end
+end</code></pre><p>assume this is a Volume, so construct one</p><pre><code class="language-julia hljs">@recipe function f(vol::AbstractArray{&lt;:MaybeNumber, 3}, args...)
+    seriestype := :volume
+    SliceIt, nothing, Volume(vol, args...), nothing
+end</code></pre><p>Dicts: each entry is a data point (x,y)=(key,value)</p><pre><code class="language-julia hljs">@recipe function f(d::AbstractDict)
+    seriestype --&gt; :line
+    collect(keys(d)), collect(values(d))
+end</code></pre><p>function without range... use the current range of the x-axis</p><pre><code class="language-julia hljs">@recipe function f(f::FuncOrFuncs{F}) where {F &lt;: Function}
+    plt = plotattributes[:plot_object]
+    xmin, xmax = if haskey(plotattributes, :xlims)
+        plotattributes[:xlims]
+    else
+        try
+            get_axis_limits(plt, :x)
+        catch
+            xinv = inverse_scale_func(get(plotattributes, :xscale, :identity))
+            xm = PlotUtils.tryrange(f, xinv.([-5, -1, 0, 0.01]))
+            xm, PlotUtils.tryrange(f, filter(x -&gt; x &gt; xm, xinv.([5, 1, 0.99, 0, -0.01])))
+        end
+    end
+    f, xmin, xmax
+end</code></pre><hr/><p>2 arguments</p><p>if functions come first, just swap the order (not to be confused with parametric functions... as there would be more than one function passed in)</p><pre><code class="language-julia hljs">@recipe function f(f::FuncOrFuncs{F}, x) where {F &lt;: Function}
+    F2 = typeof(x)
+    @assert !(F2 &lt;: Function || (F2 &lt;: AbstractArray &amp;&amp; F2.parameters[1] &lt;: Function))</code></pre><p>otherwise we&#39;d hit infinite recursion here</p><pre><code class="language-julia hljs">    x, f
+end</code></pre><hr/><p>3 arguments</p><p>surface-like... function</p><pre><code class="language-julia hljs">@recipe function f(x::AVec, y::AVec, zf::Function)
+    x, y, Surface(zf, x, y)  # TODO: replace with SurfaceFunction when supported
+end</code></pre><p>surface-like... matrix grid</p><pre><code class="language-julia hljs">@recipe function f(x::AVec, y::AVec, z::AMat)
+    if !is_surface(plotattributes)
+        plotattributes[:seriestype] = :contour
+    end
+    x, y, Surface(z)
+end</code></pre><p>parametric functions special handling... xmin/xmax with parametric function(s)</p><pre><code class="language-julia hljs">@recipe function f(f::Function, xmin::Number, xmax::Number)
+    xscale, yscale = [get(plotattributes, sym, :identity) for sym in (:xscale, :yscale)]
+    _scaled_adapted_grid(f, xscale, yscale, xmin, xmax)
+end
+@recipe function f(fs::AbstractArray{F}, xmin::Number, xmax::Number) where {F &lt;: Function}
+    xscale, yscale = [get(plotattributes, sym, :identity) for sym in (:xscale, :yscale)]
+    unzip(_scaled_adapted_grid.(vec(fs), xscale, yscale, xmin, xmax))
+end
+@recipe f(
+    fx::FuncOrFuncs{F},
+    fy::FuncOrFuncs{G},
+    u::AVec,
+) where {F &lt;: Function, G &lt;: Function} = _map_funcs(fx, u), _map_funcs(fy, u)
+@recipe f(
+    fx::FuncOrFuncs{F},
+    fy::FuncOrFuncs{G},
+    umin::Number,
+    umax::Number,
+    n = 200,
+) where {F &lt;: Function, G &lt;: Function} = fx, fy, range(umin, stop = umax, length = n)</code></pre><p>special handling... 3D parametric function(s)</p><pre><code class="language-julia hljs">@recipe function f(
+    fx::FuncOrFuncs{F},
+    fy::FuncOrFuncs{G},
+    fz::FuncOrFuncs{H},
+    u::AVec,
+) where {F &lt;: Function, G &lt;: Function, H &lt;: Function}
+    _map_funcs(fx, u), _map_funcs(fy, u), _map_funcs(fz, u)
+end
+@recipe function f(
+    fx::FuncOrFuncs{F},
+    fy::FuncOrFuncs{G},
+    fz::FuncOrFuncs{H},
+    umin::Number,
+    umax::Number,
+    numPoints = 200,
+) where {F &lt;: Function, G &lt;: Function, H &lt;: Function}
+    fx, fy, fz, range(umin, stop = umax, length = numPoints)
+end</code></pre><p>list of tuples</p><pre><code class="language-julia hljs">@recipe f(v::AVec{&lt;:Tuple}) = unzip(v)
+@recipe f(tup::Tuple) = [tup]</code></pre><p>list of NamedTuples</p><pre><code class="language-julia hljs">@recipe function f(ntv::AVec{&lt;:NamedTuple{K, Tuple{S, T}}}) where {K, S, T}
+    xguide --&gt; string(K[1])
+    yguide --&gt; string(K[2])
+    return Tuple.(ntv)
+end
+@recipe function f(ntv::AVec{&lt;:NamedTuple{K, Tuple{R, S, T}}}) where {K, R, S, T}
+    xguide --&gt; string(K[1])
+    yguide --&gt; string(K[2])
+    zguide --&gt; string(K[3])
+    return Tuple.(ntv)
+end
+
+@specialize
+
+function _scaled_adapted_grid(f, xscale, yscale, xmin, xmax)
+    (xf, xinv), (yf, yinv) = ((scale_func(s), inverse_scale_func(s)) for s in (xscale, yscale))
+    xs, ys = PlotUtils.adapted_grid(yf ∘ f ∘ xinv, xf.((xmin, xmax)))
+    xinv.(xs), yinv.(ys)
+end</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../api/">« API</a><a class="docs-footer-nextpage" href="../plot_recipe/">- »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Wednesday 12 January 2022 13:41">Wednesday 12 January 2022</span>. Using Julia version 1.7.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

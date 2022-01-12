@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>API · RecipesPipeline.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">RecipesPipeline.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">RecipesPipeline.jl</a></li><li><span class="tocitem">Developer manual</span><ul><li><a class="tocitem" href="../../api/">Public API</a></li><li><a class="tocitem" href="../../recipes/">Recipes</a></li></ul></li><li><a class="tocitem" href="../../reference/">Reference</a></li><li><span class="tocitem">Source code</span><ul><li><a class="tocitem" href="../RecipesPipeline/">RecipesPipeline</a></li><li class="is-active"><a class="tocitem" href>API</a><ul class="internal"><li><a class="tocitem" href="#Warnings"><span>Warnings</span></a></li><li><a class="tocitem" href="#Grouping"><span>Grouping</span></a></li><li><a class="tocitem" href="#Preprocessing-attributes"><span>Preprocessing attributes</span></a></li><li><a class="tocitem" href="#User-recipes"><span>User recipes</span></a></li><li><a class="tocitem" href="#Plot-recipes"><span>Plot recipes</span></a></li><li><a class="tocitem" href="#Plot-setup"><span>Plot setup</span></a></li><li><a class="tocitem" href="#Series-recipes"><span>Series recipes</span></a></li><li><a class="tocitem" href="#Finalizer"><span>Finalizer</span></a></li></ul></li><li><a class="tocitem" href="../user_recipe/">User Recipes</a></li><li><a class="tocitem" href="../plot_recipe/">-</a></li><li><a class="tocitem" href="../type_recipe/">Type Recipes</a></li><li><a class="tocitem" href="../series_recipe/">Series Recipes</a></li><li><a class="tocitem" href="../group/">Grouping</a></li><li><a class="tocitem" href="../recipes/">Default recipes</a></li><li><a class="tocitem" href="../series/">Series handling</a></li><li><a class="tocitem" href="../group/">Grouping</a></li><li><a class="tocitem" href="../utils/">Utilities</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Source code</a></li><li class="is-active"><a href>API</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>API</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaPlots/RecipesPipeline.jl/blob/master/docs/src/generated/api.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="API"><a class="docs-heading-anchor" href="#API">API</a><a id="API-1"></a><a class="docs-heading-anchor-permalink" href="#API" title="Permalink"></a></h1><h2 id="Warnings"><a class="docs-heading-anchor" href="#Warnings">Warnings</a><a id="Warnings-1"></a><a class="docs-heading-anchor-permalink" href="#Warnings" title="Permalink"></a></h2><pre><code class="language-julia hljs">&quot;&quot;&quot;
+    warn_on_recipe_aliases!(plt, plotattributes, recipe_type, args...)
+
+Warn if an alias is dedected in `plotattributes` after a recipe of type `recipe_type` is
+applied to &#39;args&#39;. `recipe_type` is either `:user`, `:type`, `:plot` or `:series`.
+&quot;&quot;&quot;
+function warn_on_recipe_aliases!(plt, plotattributes::AKW, recipe_type::Symbol, @nospecialize(args)) end
+function warn_on_recipe_aliases!(plt, v::AbstractVector, recipe_type::Symbol, @nospecialize(args))
+    for x in v
+        warn_on_recipe_aliases!(plt, x, recipe_type, args)
+    end
+end
+function warn_on_recipe_aliases!(plt, rd::RecipeData, recipe_type::Symbol, @nospecialize(args))
+    warn_on_recipe_aliases!(plt, rd.plotattributes, recipe_type, args)
+end</code></pre><h2 id="Grouping"><a class="docs-heading-anchor" href="#Grouping">Grouping</a><a id="Grouping-1"></a><a class="docs-heading-anchor-permalink" href="#Grouping" title="Permalink"></a></h2><pre><code class="language-julia hljs">&quot;&quot;&quot;
+    splittable_attribute(plt, key, val, len)
+
+Returns `true` if the attribute `key` with the value `val` can be split into groups with
+group provided as a vector of length `len`, `false` otherwise.
+&quot;&quot;&quot;
+splittable_attribute(plt, key, val, len) = false
+splittable_attribute(plt, key, val::AbstractArray, len) =
+    !(key in (:group, :color_palette)) &amp;&amp; length(axes(val, 1)) == len
+splittable_attribute(plt, key, val::Tuple, len) =
+    all(v -&gt; splittable_attribute(plt, key, v, len), val)
+
+
+&quot;&quot;&quot;
+    split_attribute(plt, key, val, indices)
+
+Select the proper indices from `val` for attribute `key`.
+&quot;&quot;&quot;
+split_attribute(plt, key, val::AbstractArray, indices) =
+    val[indices, fill(Colon(), ndims(val) - 1)...]
+split_attribute(plt, key, val::Tuple, indices) =
+    Tuple(split_attribute(plt, key, v, indices) for v in val)</code></pre><h2 id="Preprocessing-attributes"><a class="docs-heading-anchor" href="#Preprocessing-attributes">Preprocessing attributes</a><a id="Preprocessing-attributes-1"></a><a class="docs-heading-anchor-permalink" href="#Preprocessing-attributes" title="Permalink"></a></h2><pre><code class="language-julia hljs">&quot;&quot;&quot;
+    preprocess_attributes!(plt, plotattributes)
+
+Any plotting package specific preprocessing of user or recipe input happens here.
+For example, Plots replaces aliases and expands magic arguments.
+&quot;&quot;&quot;
+function preprocess_attributes!(plt, plotattributes) end</code></pre><p>TODO: should the Plots version be defined as fallback in RecipesPipeline?</p><pre><code class="language-julia hljs">&quot;&quot;&quot;
+    is_subplot_attribute(plt, attr)
+
+Returns `true` if `attr` is a subplot attribute, otherwise `false`.
+&quot;&quot;&quot;
+is_subplot_attribute(plt, attr) = false</code></pre><p>TODO: should the Plots version be defined as fallback in RecipesPipeline?</p><pre><code class="language-julia hljs">&quot;&quot;&quot;
+    is_axis_attribute(plt, attr)
+
+Returns `true` if `attr` is an axis attribute, i.e. it applies to `xattr`, `yattr` and
+`zattr`, otherwise `false`.
+&quot;&quot;&quot;
+is_axis_attribute(plt, attr) = false</code></pre><h3 id="processing-of-axis-args"><a class="docs-heading-anchor" href="#processing-of-axis-args">processing of axis args</a><a id="processing-of-axis-args-1"></a><a class="docs-heading-anchor-permalink" href="#processing-of-axis-args" title="Permalink"></a></h3><p>axis args before type recipes should still be mapped to all axes</p><pre><code class="language-julia hljs">&quot;&quot;&quot;
+    preprocess_axis_args!(plt, plotattributes)
+
+Preprocessing of axis attributes.
+Prepends the axis letter to axis attributes by default.
+&quot;&quot;&quot;
+function preprocess_axis_args!(plt, plotattributes)
+    for (k, v) in plotattributes
+        if is_axis_attribute(plt, k)
+            pop!(plotattributes, k)
+            for l in (:x, :y, :z)
+                lk = Symbol(l, k)
+                haskey(plotattributes, lk) || (plotattributes[lk] = v)
+            end
+        end
+    end
+end
+
+&quot;&quot;&quot;
+    preprocess_axis_args!(plt, plotattributes, letter)
+
+This version additionally stores the letter name in  `plotattributes[:letter]`.
+&quot;&quot;&quot;
+function preprocess_axis_args!(plt, plotattributes, letter)
+    plotattributes[:letter] = letter
+    preprocess_axis_args!(plt, plotattributes)
+end</code></pre><p>axis args in type recipes should only be applied to the current axis</p><pre><code class="language-julia hljs">&quot;&quot;&quot;
+    postprocess_axis_args!(plt, plotattributes, letter)
+
+Removes the `:letter` key from `plotattributes` and does the same prepending of the letters as `preprocess_axis_args!`.
+&quot;&quot;&quot;
+function postprocess_axis_args!(plt, plotattributes, letter)
+    pop!(plotattributes, :letter)
+    if letter in (:x, :y, :z)
+        for (k, v) in plotattributes
+            if is_axis_attribute(plt, k)
+                pop!(plotattributes, k)
+                lk = Symbol(letter, k)
+                haskey(plotattributes, lk) || (plotattributes[lk] = v)
+            end
+        end
+    end
+end</code></pre><h2 id="User-recipes"><a class="docs-heading-anchor" href="#User-recipes">User recipes</a><a id="User-recipes-1"></a><a class="docs-heading-anchor-permalink" href="#User-recipes" title="Permalink"></a></h2><pre><code class="language-julia hljs">&quot;&quot;&quot;
+    process_userrecipe!(plt, attributes_list, attributes)
+
+Do plotting package specific post-processing and add series attributes to attributes_list.
+For example, Plots increases the number of series in `plt`, sets `:series_plotindex` in
+attributes and possible adds new series attributes for errorbars or smooth.
+&quot;&quot;&quot;
+function process_userrecipe!(plt, attributes_list, attributes)
+    push!(attributes_list, attributes)
+end
+
+&quot;&quot;&quot;
+    get_axis_limits(plt, letter)
+
+Get the limits for the axis specified by `letter` (`:x`, `:y` or `:z`) in `plt`. If it
+errors, `tryrange` from PlotUtils is used.
+&quot;&quot;&quot;
+get_axis_limits(plt, letter) = throw(ErrorException(&quot;Axis limits not defined.&quot;))</code></pre><h2 id="Plot-recipes"><a class="docs-heading-anchor" href="#Plot-recipes">Plot recipes</a><a id="Plot-recipes-1"></a><a class="docs-heading-anchor-permalink" href="#Plot-recipes" title="Permalink"></a></h2><pre><code class="language-julia hljs">&quot;&quot;&quot;
+    type_alias(plt, st)
+
+Return the seriestype alias for `st`.
+&quot;&quot;&quot;
+type_alias(plt, st) = st</code></pre><h2 id="Plot-setup"><a class="docs-heading-anchor" href="#Plot-setup">Plot setup</a><a id="Plot-setup-1"></a><a class="docs-heading-anchor-permalink" href="#Plot-setup" title="Permalink"></a></h2><pre><code class="language-julia hljs">&quot;&quot;&quot;
+    plot_setup!(plt, plotattributes, kw_list)
+
+Setup plot, subplots and layouts.
+For example, Plots creates the backend figure, initializes subplots, expands extrema and
+links subplot axes.
+&quot;&quot;&quot;
+function plot_setup!(plt, plotattributes, kw_list) end</code></pre><h2 id="Series-recipes"><a class="docs-heading-anchor" href="#Series-recipes">Series recipes</a><a id="Series-recipes-1"></a><a class="docs-heading-anchor-permalink" href="#Series-recipes" title="Permalink"></a></h2><pre><code class="language-julia hljs">&quot;&quot;&quot;
+    slice_series_attributes!(plt, kw_list, kw)
+
+For attributes given as vector with one element per series, only select the value for
+current series.
+&quot;&quot;&quot;
+function slice_series_attributes!(plt, kw_list, kw) end
+
+&quot;&quot;&quot;
+    process_sliced_series_attributes!(plt, kw_list)
+
+All series attributes are now properly resolved. Any change of the `kw_list` before the application of recipes must come here.
+&quot;&quot;&quot;
+function process_sliced_series_attributes!(plt, kw_list) end
+
+&quot;&quot;&quot;
+    series_defaults(plt)
+
+Returns a `Dict` storing the defaults for series attributes.
+&quot;&quot;&quot;
+series_defaults(plt) = Dict{Symbol, Any}()</code></pre><p>TODO: Add a more sensible fallback including e.g. path, scatter, ...</p><pre><code class="language-julia hljs">&quot;&quot;&quot;
+    is_seriestype_supported(plt, st)
+
+Check if the plotting package natively supports the seriestype `st`.
+&quot;&quot;&quot;
+is_seriestype_supported(plt, st) = false
+
+&quot;&quot;&quot;
+    is_key_supported(key)
+
+Check if the plotting package natively supports the attribute `key`
+&quot;&quot;&quot;
+RecipesBase.is_key_supported(key) = true</code></pre><h2 id="Finalizer"><a class="docs-heading-anchor" href="#Finalizer">Finalizer</a><a id="Finalizer-1"></a><a class="docs-heading-anchor-permalink" href="#Finalizer" title="Permalink"></a></h2><pre><code class="language-julia hljs">&quot;&quot;&quot;
+    add_series!(plt, kw)
+
+Adds the series defined by `kw` to the plot object.
+For example Plots updates the current subplot arguments, expands extrema and pushes the
+the series to the series_list of `plt`.
+&quot;&quot;&quot;
+function add_series!(plt, kw) end</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../RecipesPipeline/">« RecipesPipeline</a><a class="docs-footer-nextpage" href="../user_recipe/">User Recipes »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Wednesday 12 January 2022 13:41">Wednesday 12 January 2022</span>. Using Julia version 1.7.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
