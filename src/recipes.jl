@@ -30,6 +30,15 @@ timeformatter(t) = string(Dates.Time(Dates.Nanosecond(round(t))))
 @recipe f(::Type{P}, t::P) where {P<:Dates.Period} =
     (t -> Dates.value(t), t -> string(P(round(t))))
 
+# Support segments
+@recipe f(::Type{Vector{T}}, dt::Vector{T}) where {T<:DateTime} = 
+    (dt -> Dates.value.(dt), datetimeformatter)
+@recipe f(::Type{Vector{T}}, dt::Vector{T}) where {T<:Date} = 
+    (dt -> Dates.value.(dt), dateformatter)
+@recipe f(::Type{Vector{T}}, dt::Vector{T}) where {T<:Time} = 
+    (dt -> Dates.value.(dt), timeformatter)
+
+
 # -------------------------------------------------
 # ## Characters
 
