@@ -16,7 +16,7 @@ function _extract_group_attributes(v::AVec, args...; legend_entry = string)
             res[label] = [i]
         end
     end
-    group_labels = sort(collect(keys(res)))
+    group_labels = (sort ∘ collect ∘ keys)(res)
     group_indices = [res[i] for i in group_labels]
     
     GroupBy(map(legend_entry, group_labels), group_indices)
@@ -42,7 +42,7 @@ end
 
 # expecting a mapping of "group label" to "group indices"
 function _extract_group_attributes(idxmap::Dict{T,V}, args...) where {T, V<:AVec{Int}}
-    group_labels = sortedkeys(idxmap)
+    group_labels = (sort ∘ collect ∘ keys)(idxmap)
     group_indices = Vector{Int}[collect(idxmap[k]) for k in group_labels]
     GroupBy(group_labels, group_indices)
 end
