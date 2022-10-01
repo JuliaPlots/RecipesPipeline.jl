@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Type Recipes · RecipesPipeline.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">RecipesPipeline.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">RecipesPipeline.jl</a></li><li><span class="tocitem">Developer manual</span><ul><li><a class="tocitem" href="../../api/">Public API</a></li><li><a class="tocitem" href="../../recipes/">Recipes</a></li></ul></li><li><a class="tocitem" href="../../reference/">Reference</a></li><li><span class="tocitem">Source code</span><ul><li><a class="tocitem" href="../RecipesPipeline/">RecipesPipeline</a></li><li><a class="tocitem" href="../api/">API</a></li><li><a class="tocitem" href="../user_recipe/">User Recipes</a></li><li><a class="tocitem" href="../plot_recipe/">-</a></li><li class="is-active"><a class="tocitem" href>Type Recipes</a></li><li><a class="tocitem" href="../series_recipe/">Series Recipes</a></li><li><a class="tocitem" href="../group/">Grouping</a></li><li><a class="tocitem" href="../recipes/">Default recipes</a></li><li><a class="tocitem" href="../series/">Series handling</a></li><li><a class="tocitem" href="../group/">Grouping</a></li><li><a class="tocitem" href="../utils/">Utilities</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Source code</a></li><li class="is-active"><a href>Type Recipes</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Type Recipes</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaPlots/RecipesPipeline.jl/blob/master/docs/src/generated/type_recipe.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Type-Recipes"><a class="docs-heading-anchor" href="#Type-Recipes">Type Recipes</a><a id="Type-Recipes-1"></a><a class="docs-heading-anchor-permalink" href="#Type-Recipes" title="Permalink"></a></h1><pre><code class="language-julia hljs">@nospecialize</code></pre><p>this is the default &quot;type recipe&quot;... just pass the object through</p><pre><code class="language-julia hljs">@recipe f(::Type{T}, v::T) where {T} = v</code></pre><p>this should catch unhandled &quot;series recipes&quot; and error with a nice message</p><pre><code class="language-julia hljs">@recipe f(::Type{V}, x, y, z) where {V &lt;: Val} =
+    error(&quot;The backend must not support the series type $V, and there isn&#39;t a series recipe defined.&quot;)
+
+&quot;&quot;&quot;
+    _apply_type_recipe(plotattributes, v::T, letter)
+
+Apply the type recipe with signature `(::Type{T}, ::T)`.
+&quot;&quot;&quot;
+function _apply_type_recipe(plotattributes, v, letter)
+    plt = plotattributes[:plot_object]
+    preprocess_axis_args!(plt, plotattributes, letter)
+    rdvec = RecipesBase.apply_recipe(plotattributes, typeof(v), v)
+    warn_on_recipe_aliases!(plotattributes[:plot_object], plotattributes, :type, v)
+    postprocess_axis_args!(plt, plotattributes, letter)
+    return rdvec[1].args[1]
+end</code></pre><p>Handle type recipes when the recipe is defined on the elements. This sort of recipe should return a pair of functions... one to convert to number, and one to format tick values.</p><pre><code class="language-julia hljs">function _apply_type_recipe(plotattributes, v::AbstractArray, letter)
+    plt = plotattributes[:plot_object]
+    preprocess_axis_args!(plt, plotattributes, letter)</code></pre><p>First we try to apply an array type recipe.</p><pre><code class="language-julia hljs">    w = RecipesBase.apply_recipe(plotattributes, typeof(v), v)[1].args[1]
+    warn_on_recipe_aliases!(plt, plotattributes, :type, v)</code></pre><p>If the type did not change try it element-wise</p><pre><code class="language-julia hljs">    if typeof(v) == typeof(w)
+        isempty(skipmissing(v)) &amp;&amp; return Float64[]
+        x = first(skipmissing(v))
+        args = RecipesBase.apply_recipe(plotattributes, typeof(x), x)[1].args
+        warn_on_recipe_aliases!(plt, plotattributes, :type, x)
+        postprocess_axis_args!(plt, plotattributes, letter)
+        if length(args) == 2 &amp;&amp; all(arg -&gt; arg isa Function, args)
+            numfunc, formatter = args
+            return Formatted(map(numfunc, v), formatter)
+        else
+            return v
+        end
+    end
+    postprocess_axis_args!(plt, plotattributes, letter)
+    return w
+end</code></pre><p>special handling for Surface... need to properly unwrap and re-wrap</p><pre><code class="language-julia hljs">_apply_type_recipe(
+    plotattributes,
+    v::Surface{&lt;:AMat{&lt;:Union{AbstractFloat, Integer, AbstractString, Missing}}},
+    letter,
+) = v
+function _apply_type_recipe(plotattributes, v::Surface, letter)
+    ret = _apply_type_recipe(plotattributes, v.surf, letter)
+    if typeof(ret) &lt;: Formatted
+        Formatted(Surface(ret.data), ret.formatter)
+    else
+        Surface(ret)
+    end
+end</code></pre><p>don&#39;t do anything for datapoints or nothing</p><pre><code class="language-julia hljs">_apply_type_recipe(
+    plotattributes,
+    v::AbstractArray{&lt;:Union{AbstractFloat, Integer, AbstractString, Missing}},
+    letter,
+) = v
+_apply_type_recipe(plotattributes, v::Nothing, letter) = v
+
+@specialize</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../plot_recipe/">« -</a><a class="docs-footer-nextpage" href="../series_recipe/">Series Recipes »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Saturday 1 October 2022 07:49">Saturday 1 October 2022</span>. Using Julia version 1.8.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
