@@ -51,7 +51,7 @@ isdefault(dd::DefaultsDict, k) = !is_explicit(dd, k) && haskey(dd.defaults, k)
 Base.setindex!(dd::DefaultsDict, v, k) = dd.explicit[k] = v
 
 # Reset to default value and return dict
-@inline function reset_kw!(dd::DefaultsDict, k)
+function reset_kw!(dd::DefaultsDict, k)
     is_explicit(dd, k) && delete!(dd.explicit, k)
     return dd
 end
