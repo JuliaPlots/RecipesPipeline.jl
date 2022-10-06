@@ -1,4 +1,4 @@
-# WARNING: `RecipesBase` now lives in https://github.com/JuliaPlots/Plots.jl/tree/master/RecipesPipeline, please open issues [here](https://github.com/JuliaPlots/Plots.jl/issues) and PRs [here](https://github.com/JuliaPlots/Plots.jl/pulls).
+# WARNING: `RecipesPipeline` now lives in https://github.com/JuliaPlots/Plots.jl/tree/master/RecipesPipeline, please open issues [here](https://github.com/JuliaPlots/Plots.jl/issues) and PRs [here](https://github.com/JuliaPlots/Plots.jl/pulls).
 
 # RecipesPipeline
 [travis-img]: https://travis-ci.com/JuliaPlots/RecipesPipeline.jl.svg?branch=master
