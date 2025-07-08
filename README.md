@@ -1,13 +1,10 @@
-# WARNING: `RecipesPipeline` now lives in https://github.com/JuliaPlots/Plots.jl/tree/master/RecipesPipeline, please open issues [here](https://github.com/JuliaPlots/Plots.jl/issues) and PRs [here](https://github.com/JuliaPlots/Plots.jl/pulls).
+# ⚠️ WARNING: `RecipesPipeline` now lives in [Plots.jl](https://github.com/JuliaPlots/Plots.jl/tree/master/RecipesPipeline), please open issues [here](https://github.com/JuliaPlots/Plots.jl/issues) and PRs [here](https://github.com/JuliaPlots/Plots.jl/pulls). ⚠️
 
 # RecipesPipeline
-[travis-img]: https://travis-ci.com/JuliaPlots/RecipesPipeline.jl.svg?branch=master
-[travis-url]: https://travis-ci.com/JuliaPlots/RecipesPipeline.jl
 
-[docs-img]: https://img.shields.io/badge/docs-dev-blue.svg
-[docs-url]: http://juliaplots.org/RecipesPipeline.jl/dev/
+[docs-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-url]: https://docs.juliaplots.org/stable/RecipesPipeline/
 
-[![][travis-img]][travis-url]
 [![][docs-img]][docs-url]
 [![Codecov](https://codecov.io/gh/JuliaPlots/RecipesPipeline.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaPlots/RecipesPipeline.jl)
 [![project chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://julialang.zulipchat.com/#narrow/stream/236493-plots)
